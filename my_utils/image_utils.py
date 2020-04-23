@@ -5,22 +5,31 @@ from torch.functional import F
 import pandas as pd
 import numpy as np
 from PIL import Image
+import cv2
 
-def dataset_choice(n=50000,root_path = "",conf=0.95):
+def dataset_choice(n=50000,root_path = "",conf=0.95,small_data=False):
     url = "https://raw.githubusercontent.com/grapeot/Danbooru2018AnimeCharacterRecognitionDataset/master/faces.tsv"
     tagid = pd.read_csv(url, sep="\t", names=["filename", "tag", "x1", "y1", "x2", "y2", "prob"])
     new_tag_id = tagid[tagid["x1"].apply(lambda x: float(x.split()[-1])) > conf][["filename", "tag"]].reset_index(drop=True)
     img_path = list(new_tag_id.sample(n=n)["filename"])
     img_path = list(map(lambda x:"/".join(x.split("\\"))[1:],img_path))
 
-    train_data = []
+    train_data_128,train_data_64,train_data_32,train_data_16,train_data_8,train_data_4 = [],[],[],[],[],[]
     for i, path in enumerate(img_path):
+        if (i % 500) == 0:
+            print(f"{i}")
         try:
             img = np.array(Image.open(root_path + path).convert("RGB"))
-            train_data.append(img[None, :, :, :])
+            train_data_128.append(img[None, :, :, :])
+            if small_data:
+                train_data_64.append(cv2.resize(img, (64,64), interpolation=cv2.INTER_LINEAR))
+                train_data_32.append(cv2.resize(img, (32,32), interpolation=cv2.INTER_LINEAR))
+                train_data_16.append(cv2.resize(img, (16,16), interpolation=cv2.INTER_LINEAR))
+                train_data_8.append(cv2.resize(img, (8, 8) , interpolation=cv2.INTER_LINEAR))
+                train_data_4.append(cv2.resize(img, (4, 4) , interpolation=cv2.INTER_LINEAR))
         except:
             pass
-    return img_path
+    return train_data_128,train_data_64,train_data_32,train_data_16,train_data_8,train_data_4
 
 def gan_img_norm(x):
     return (x-127.5) / 127.5
