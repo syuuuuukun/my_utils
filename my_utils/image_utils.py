@@ -2,6 +2,29 @@ import torch
 import torch.nn as nn
 from torch.functional import F
 
+def gan_img_norm(x):
+    return (x-127.5) / 127.5
+
+def gan_img_renorm(x):
+    out = (x + 1) / 2
+    return out.clamp_(0, 1)
+
+def gp_loss(fake,real,model_D,label=None,embed=None,epsilon=1e-3):
+    b, c, h, w = fake.shape
+    epsilon = torch.rand(b, 1, 1, 1, dtype=fake.dtype, device=fake.device)
+    intpl = epsilon * fake + (1 - epsilon) * real
+    intpl.requires_grad_()
+    if label is None:
+        f = model_D.forward(intpl)
+        grad = torch.autograd.grad(f[1].sum(), intpl, create_graph=True)[0]
+    else:
+        f = model_D.forward(intpl, embed(label))
+        grad = torch.autograd.grad(f.sum(), intpl, create_graph=True)[0]
+    grad_norm = grad.view(b, -1).norm(dim=1)
+
+    ##zero_centered_gp
+    loss_gp = 10 * (grad_norm**2).mean()
+    return loss_gp
 
 class Self_Attn(nn.Module):
     """ Self attention Layer"""
