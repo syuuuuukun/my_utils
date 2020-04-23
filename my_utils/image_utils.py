@@ -2,6 +2,26 @@ import torch
 import torch.nn as nn
 from torch.functional import F
 
+import pandas as pd
+import numpy as np
+from PIL import Image
+
+def dataset_choice(n=50000,root_path = "",conf=0.95):
+    url = "https://raw.githubusercontent.com/grapeot/Danbooru2018AnimeCharacterRecognitionDataset/master/faces.tsv"
+    tagid = pd.read_csv(url, sep="\t", names=["filename", "tag", "x1", "y1", "x2", "y2", "prob"])
+    new_tag_id = tagid[tagid["x1"].apply(lambda x: float(x.split()[-1])) > conf][["filename", "tag"]].reset_index(drop=True)
+    img_path = list(new_tag_id.sample(n=n)["filename"])
+    img_path = list(map(lambda x:"/".join(x.split("\\"))[1:],img_path))
+
+    train_data = []
+    for i, path in enumerate(img_path):
+        try:
+            img = np.array(Image.open(root_path + path).convert("RGB"))
+            train_data.append(img[None, :, :, :])
+        except:
+            pass
+    return img_path
+
 def gan_img_norm(x):
     return (x-127.5) / 127.5
 
