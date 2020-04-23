@@ -22,11 +22,11 @@ def dataset_choice(n=50000,root_path = "",conf=0.95,small_data=False):
             img = np.array(Image.open(root_path + path).convert("RGB"))
             train_data_128.append(img[None, :, :, :])
             if small_data:
-                train_data_64.append(cv2.resize(img, (64,64), interpolation=cv2.INTER_LINEAR))
-                train_data_32.append(cv2.resize(img, (32,32), interpolation=cv2.INTER_LINEAR))
-                train_data_16.append(cv2.resize(img, (16,16), interpolation=cv2.INTER_LINEAR))
-                train_data_8.append(cv2.resize(img, (8, 8) , interpolation=cv2.INTER_LINEAR))
-                train_data_4.append(cv2.resize(img, (4, 4) , interpolation=cv2.INTER_LINEAR))
+                train_data_64.append(cv2.resize(img, (64,64), interpolation=cv2.INTER_LINEAR)[None, :, :, :])
+                train_data_32.append(cv2.resize(img, (32,32), interpolation=cv2.INTER_LINEAR)[None, :, :, :])
+                train_data_16.append(cv2.resize(img, (16,16), interpolation=cv2.INTER_LINEAR)[None, :, :, :])
+                train_data_8.append(cv2.resize(img, (8, 8) , interpolation=cv2.INTER_LINEAR)[None, :, :, :])
+                train_data_4.append(cv2.resize(img, (4, 4) , interpolation=cv2.INTER_LINEAR)[None, :, :, :])
         except:
             pass
     return train_data_128,train_data_64,train_data_32,train_data_16,train_data_8,train_data_4
