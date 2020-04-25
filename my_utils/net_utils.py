@@ -35,3 +35,30 @@ def weights_init(m,norm_type="normal"):
         elif norm_type == "orthogonal":
             init.orthogonal_(m.weight,np.sqrt(2))
 
+
+class log_ploter(object):
+    def __init__(self):
+        self.names = None
+        self.losses = []
+
+    def ploter(self):
+        print()
+        for name, loss in zip(self.names, self.losses):
+            print(f"{name}: {np.mean(loss):.4}")
+        self.losses = [[] for i in range(len(self.names))]
+
+    def get_var_names(self, vars):
+        names = []
+        for var in vars:
+            for k, v in globals().items():
+                if id(v) == id(var):
+                    names.append(k)
+        return names
+
+    def updater(self, losses):
+        if self.names is None:
+            self.names = self.get_var_names(losses)
+            self.losses = [[] for i in range(len(self.names))]
+
+        for i, loss in enumerate(losses):
+            self.losses[i].append(loss.item())
