@@ -1,7 +1,10 @@
-from torch.nn import init
-import numpy as np
 import random
+import os
+
+import numpy as np
+
 import torch
+from torch.nn import init
 
 def to_tensor(x):
     return torch.from_numpy(x)
@@ -9,11 +12,16 @@ def to_tensor(x):
 def to_numpy(x):
     return x.detach().cpu().numpy()
 
-def set_seed(seed=42):
+def set_seed(seed=42,isgpu=False):
     random.seed(seed)
+    os.environ["PYTHONHASHSEED"] = str(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
-    torch.cuda.manual_seed_all(seed)
+    if isgpu:
+        torch.cuda.manual_seed_all(seed)
+        torch.backends.cudnn.deterministic = True
+        torch.backends.cudnn.benchmark = True
+
 
 
 def weights_init(m,norm_type="normal"):
